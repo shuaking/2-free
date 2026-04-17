@@ -1,4 +1,4 @@
-const { checkLoginStatus, verifyAccessPassword, isAccessPasswordEnabled } = require('../../../lib/freebuff');
+﻿const { checkLoginStatus, verifyAccessPassword, isAccessPasswordEnabled } = require('../../../lib/freebuff');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -17,7 +17,7 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     res.status(error.status || 500).json({
       error: {
-        message: error.message || '��ѯ��¼״̬ʧ��',
+        message: error.message || '查询登录状态失败',
       },
     });
   }

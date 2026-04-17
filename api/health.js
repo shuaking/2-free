@@ -1,4 +1,4 @@
-const { getDefaultModel, isAccessPasswordEnabled } = require('../lib/freebuff');
+﻿const { getDefaultModel, isAccessPasswordEnabled } = require('../lib/freebuff');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {

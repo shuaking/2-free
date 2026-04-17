@@ -1,4 +1,4 @@
-const { isAccessPasswordEnabled, verifyAccessPassword } = require('../../lib/freebuff');
+﻿const { isAccessPasswordEnabled, verifyAccessPassword } = require('../../lib/freebuff');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {

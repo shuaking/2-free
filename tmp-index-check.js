@@ -1,58 +1,4 @@
-﻿<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Freebuff2API Web</title>
-<style>
-:root{color-scheme:dark;--bg:#08111f;--panel:rgba(13,24,42,.9);--line:rgba(120,170,255,.18);--text:#e8f0ff;--muted:#91a7d3;--brand:#67a2ff;--brand2:#8f6dff;--ok:#5dd6a2;--danger:#ff7f96}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--text);font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:radial-gradient(circle at top,rgba(103,162,255,.24),transparent 32%),radial-gradient(circle at right,rgba(143,109,255,.16),transparent 26%),var(--bg)}
-.hidden{display:none!important}.wrap{width:min(1180px,calc(100vw - 24px));margin:16px auto;display:grid;gap:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 20px 80px rgba(0,0,0,.28)}
-.hero h1{margin:10px 0 8px;font-size:clamp(28px,5vw,42px)}.muted,.status,.tips{color:var(--muted);line-height:1.6}.badge{display:inline-block;padding:6px 12px;border-radius:999px;background:rgba(103,162,255,.16);color:#bed4ff;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-.layout{display:grid;grid-template-columns:360px 1fr;gap:16px}.stack{display:grid;gap:12px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-label{display:block;margin-bottom:8px;font-size:14px;color:#d5e3ff}input,select,textarea,button,pre{width:100%;border-radius:14px;border:1px solid rgba(132,160,216,.2);background:rgba(5,12,24,.65);color:var(--text);font:inherit}input,select,button{min-height:44px;padding:0 14px}textarea{min-height:160px;padding:14px;resize:vertical;line-height:1.6}
-button{cursor:pointer;font-weight:700;border:none;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:0 12px 30px rgba(103,162,255,.26)}button.secondary{background:rgba(255,255,255,.08);box-shadow:none;border:1px solid rgba(132,160,216,.2)}button.ghost{background:transparent;box-shadow:none;border:1px solid rgba(132,160,216,.2)}button:disabled{opacity:.55;cursor:wait}
-.status.success{color:var(--ok)}.status.error{color:var(--danger)}.account-list{display:grid;gap:10px}.account-item{padding:14px;border-radius:16px;border:1px solid rgba(132,160,216,.16);background:rgba(255,255,255,.05)}.chip{display:inline-block;padding:5px 10px;border-radius:999px;background:rgba(103,162,255,.12);color:#bdd4ff;font-size:12px}.chips{display:flex;flex-wrap:wrap;gap:8px}.empty{padding:16px;border-radius:16px;border:1px dashed rgba(132,160,216,.2);text-align:center;color:var(--muted)}pre{min-height:280px;margin:0;padding:16px;overflow:auto;white-space:pre-wrap;word-break:break-word}.gate-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}.gate{width:min(460px,100%)}code{font-family:Consolas,Monaco,monospace}@media (max-width:920px){.layout,.two{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<div id="gateWrap" class="gate-wrap hidden">
-  <section class="card gate stack">
-    <div class="badge">Access Protected</div>
-    <h1>请输入首面密码</h1>
-    <div class="muted">没有密码就不能进入主界面。</div>
-    <div><label for="accessPassword">访问密码</label><input id="accessPassword" type="password" placeholder="输入首页访问密码" /></div>
-    <button id="unlockBtn">进入系统</button>
-    <div id="gateStatus" class="status">请输入密码后继续。</div>
-  </section>
-</div>
-<main id="appRoot" class="wrap hidden">
-  <section class="card hero"><div class="badge">Github Login + Round Robin</div><h1>Freebuff2API 多账号 Web 控制台</h1><div class="muted">支持首面密码、GitHub 登录、多账号池、轮询与固定账号调用。</div></section>
-  <section class="layout">
-    <div class="stack">
-      <section class="card stack">
-        <div class="row"><strong>账号池</strong><button id="loginBtn" class="secondary">新增 GitHub 登录账号</button></div>
-        <div id="loginStatus" class="status">还没有开始登录。</div>
-        <div id="accountList" class="account-list"></div>
-        <button id="clearAccountsBtn" class="ghost">清空本地账号池</button>
-        <div class="tips">账号仅保存在当前浏览器的 <code>localStorage</code> 中。</div>
-      </section>
-      <section class="card stack">
-        <div><label for="model">模型</label><select id="model"></select></div>
-        <div class="two">
-          <div><label for="rotationStrategy">账号分配</label><select id="rotationStrategy"><option value="round_robin">轮询</option><option value="fixed">固定账号</option></select></div>
-          <div><label for="fixedAccount">固定账号</label><select id="fixedAccount"></select></div>
-        </div>
-        <div><label for="prompt">消息内容</label><textarea id="prompt" placeholder="例如：帮我总结一下这个项目现在的多账号调度逻辑"></textarea></div>
-        <button id="submit">发送请求</button>
-        <div id="status" class="status">正在加载模型列表…</div>
-        <div class="tips">接口：<code>/api/v1/chat/completions</code> ｜ 登录：<code>/api/auth/login/start</code> / <code>/api/auth/login/status</code></div>
-      </section>
-    </div>
-    <section class="card stack"><div class="row"><strong>返回结果</strong><span id="usedAccount" class="chip">尚未发送请求</span></div><pre id="result">等待你的提问…</pre></section>
-  </section>
-</main>
-<script>
+﻿
 const STORAGE_KEY='freebuff2api.accounts';
 const ACCESS_STORAGE_KEY='freebuff2api.access-password';
 const POLL_INTERVAL_MS=3000;
@@ -92,6 +38,4 @@ async function pollLoginStatus(payload){const startedAt=Date.now();while(Date.no
 async function startLogin(){if(loginPolling){setStatus(loginStatusNode,'已经有登录流程在进行中。','error');return}const popup=openPendingLoginWindow();loginBtn.disabled=true;setStatus(loginStatusNode,'正在申请登录链接…');try{const response=await fetch('/api/auth/login/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:accessPassword})});const data=await response.json();if(!response.ok){if(popup&&!popup.closed)popup.close();throw new Error((data&&data.error&&data.error.message)||'登录启动失败')}if(!popup){throw new Error('浏览器拦截了登录弹窗，请允许弹窗后重试。登录地址：'+data.loginUrl)}popup.location.href=data.loginUrl;setStatus(loginStatusNode,'登录页面已打开，请在新窗口完成 GitHub 登录授权。','success');loginPolling=pollLoginStatus(data);await loginPolling}catch(error){try{if(popup&&!popup.closed&&popup.location.href==='about:blank')popup.close()}catch{}setStatus(loginStatusNode,'登录失败：'+error.message,'error')}finally{loginPolling=null;loginBtn.disabled=false}}
 async function runChat(){const prompt=promptInput.value.trim();if(!prompt){setStatus(statusNode,'先输入点内容。','error');return}if(!accounts.length){setStatus(statusNode,'请先至少登录一个账号。','error');return}submitButton.disabled=true;usedAccountNode.textContent='请求处理中';setStatus(statusNode,'请求发送中…');resultNode.textContent='思考中…';try{const response=await fetch('/api/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:modelSelect.value,messages:[{role:'user',content:prompt}],stream:false,rotationStrategy:rotationStrategySelect.value,accountIndex:Number(fixedAccountSelect.value||0),accounts,accessPassword})});const data=await response.json();if(!response.ok){throw new Error((data&&data.error&&data.error.message)||'请求失败')}resultNode.textContent=(data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content)||JSON.stringify(data,null,2);const account=data.account||{};usedAccountNode.textContent=(account.strategy==='fixed'?'固定':'轮询')+' · '+(account.email||account.name||'未知账号');setStatus(statusNode,'请求完成，使用账号序号 '+((Number(account.index)||0)+1),'success')}catch(error){resultNode.textContent=error.message;usedAccountNode.textContent='请求失败';setStatus(statusNode,'请求失败：'+error.message,'error')}finally{submitButton.disabled=false}}
 unlockBtn.addEventListener('click',unlock);accessPasswordInput.addEventListener('keydown',event=>{if(event.key==='Enter')unlock()});loginBtn.addEventListener('click',startLogin);clearAccountsBtn.addEventListener('click',()=>{accounts=[];saveAccounts();renderAccounts();setStatus(loginStatusNode,'本地账号池已清空。','success')});submitButton.addEventListener('click',runChat);promptInput.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter')runChat()});bootstrapAccess();
-</script>
-</body>
-</html>
+
