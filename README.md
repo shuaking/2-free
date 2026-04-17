@@ -20,20 +20,30 @@
 
 这是当前最接近“纯 Web 页自动导入”的方案。
 
+#### 最新工作方式
+
+书签脚本现在会优先：
+
+1. 在 `freebuff.com` 已登录态下直接请求：
+   - `/api/auth/cli/code`
+   - `/api/auth/cli/status`
+2. 如果站内接口返回 `user.authToken`，就立即回传到你的 Web 页
+3. 如果接口拿不到，再退回到页面存储扫描模式
+
 #### 使用方法
 
 1. 打开你的 `Freebuff2API Web` 页面
-2. 把页面里的“拖拽此按钮到书签栏”拖到浏览器书签栏
+2. 重新把页面里的“拖拽此按钮到书签栏”拖到浏览器书签栏
 3. 登录 `https://freebuff.com/`
-4. 在 `freebuff.com` 页面点击刚才保存的书签
-5. 页面会自动跳回你的 `Freebuff2API Web`
-6. 如果成功抓到 token，会自动导入账号池
+4. **进入登录后的主应用页面**，不要停在仅显示 “Login successful” 的过渡页
+5. 点击书签
+6. 页面会自动跳回你的 `Freebuff2API Web`
+7. 如果成功抓到 token，会自动导入账号池
 
-#### 原理
+#### 重要提醒
 
-- 普通网页不能直接跨域读取 `freebuff.com` 的登录态
-- 书签脚本是在 `freebuff.com` 当前页面上下文执行
-- 所以它可以读取该页面里可访问的状态，再把 token 通过 URL hash 回传给你的 Web 页
+- 你必须重新拖一次新的书签按钮，旧书签还是旧逻辑
+- 最好在 `freebuff.com` 登录后的业务页面里点书签，而不是刚登录成功的提示页
 
 ### 方案 B：网页登录兜底
 
@@ -73,5 +83,5 @@ vercel
 - `stream: true` 暂未支持
 - 账号池默认保存在浏览器 `localStorage`
 - 首面密码是应用层保护，不是完整用户系统
-- Bookmarklet 仍然依赖 `freebuff.com` 页面上存在可读 token 线索
+- Bookmarklet 仍依赖 `freebuff.com` 登录后页面具备有效会话
 - Serverless 的内存轮询计数与 `runId` 缓存不是强持久的，冷启动后会重新计数
