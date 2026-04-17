@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Freebuff2API Web</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: rgba(12, 24, 44, 0.86);
+      --line: rgba(120, 170, 255, 0.18);
+      --text: #e8f0ff;
+      --muted: #90a7d3;
+      --brand: #67a2ff;
+      --brand-2: #8f6dff;
+      --danger: #ff7f96;
+      --ok: #5dd6a2;
+      --chip: rgba(255, 255, 255, 0.06);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(103, 162, 255, 0.24), transparent 32%),
+        radial-gradient(circle at right, rgba(143, 109, 255, 0.16), transparent 26%),
+        var(--bg);
+      color: var(--text);
+    }
+    .shell {
+      width: min(1240px, calc(100vw - 28px));
+      margin: 24px auto;
+      display: grid;
+      gap: 18px;
+    }
+    .hero, .panel, .gate {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.28);
+    }
+    .hero { padding: 26px; display: grid; gap: 12px; }
+    .badge {
+      width: fit-content;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(103, 162, 255, 0.16);
+      color: #b7d0ff;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: clamp(28px, 5vw, 46px); line-height: 1.05; }
+    p { margin: 0; color: var(--muted); line-height: 1.7; }
+    .layout { display: grid; grid-template-columns: 380px 1fr; gap: 18px; }
+    .panel, .gate { padding: 18px; }
+    .stack { display: grid; gap: 14px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    label { display: block; margin-bottom: 8px; font-size: 14px; color: #cfe0ff; }
+    select, textarea, button, pre, input {
+      width: 100%; border-radius: 16px; border: 1px solid rgba(132, 160, 216, 0.2);
+      background: rgba(5, 12, 24, 0.65); color: var(--text); font: inherit;
+    }
+    select, button, input { min-height: 46px; padding: 0 14px; }
+    textarea { min-height: 180px; padding: 14px; resize: vertical; line-height: 1.6; }
+    button {
+      cursor: pointer; font-weight: 700; border: none;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      box-shadow: 0 12px 30px rgba(103, 162, 255, 0.26);
+    }
+    button.secondary { background: rgba(255,255,255,0.08); box-shadow: none; border: 1px solid rgba(132,160,216,0.2); }
+    button.ghost { background: transparent; box-shadow: none; border: 1px solid rgba(132,160,216,0.2); }
+    button:disabled { opacity: 0.55; cursor: wait; }
+    .status { font-size: 13px; color: var(--muted); }
+    .status.error { color: var(--danger); }
+    .status.success { color: var(--ok); }
+    pre {
+      min-height: 320px; margin: 0; padding: 16px; overflow: auto; line-height: 1.6;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .account-list { display: grid; gap: 10px; }
+    .account-item {
+      padding: 14px; border-radius: 16px; background: var(--chip);
+      border: 1px solid rgba(132, 160, 216, 0.16); display: grid; gap: 10px;
+    }
+    .account-top, .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .name { font-weight: 700; }
+    .muted, .tips { color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      padding: 5px 10px; border-radius: 999px; background: rgba(103, 162, 255, 0.12);
+      color: #bdd4ff; font-size: 12px;
+    }
+    .empty {
+      padding: 18px; border-radius: 16px; border: 1px dashed rgba(132,160,216,0.2);
+      color: var(--muted); text-align: center;
+    }
+    .hidden { display: none !important; }
+    .gate-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .gate {
+      width: min(460px, 100%);
+      display: grid;
+      gap: 14px;
+    }
+    code { font-family: Consolas, Monaco, monospace; color: #d7e5ff; }
+    @media (max-width: 920px) {
+      .layout, .two-col { grid-template-columns: 1fr; }
+      .shell { width: min(100vw - 20px, 1240px); margin: 14px auto; }
+      .hero, .panel, .gate { border-radius: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="gateWrap" class="gate-wrap hidden">
+    <section class="gate">
+      <div class="badge">Access Protected</div>
+      <h1>请输入首面密码</h1>
+      <p>哼，没有密码就别想直接进来。本小姐只是顺手帮你挡一下外人而已，不是特别关心安全啦。</p>
+      <div>
+        <label for="accessPassword">访问密码</label>
+        <input id="accessPassword" type="password" placeholder="输入首页访问密码" />
+      </div>
+      <button id="unlockBtn">进入系统</button>
+      <div id="gateStatus" class="status">请输入密码后再继续。</div>
+    </section>
+  </div>
+
+  <main id="appRoot" class="shell hidden">
+    <section class="hero">
+      <div class="badge">Github Login + Round Robin</div>
+      <h1>Freebuff2API 多账号 Web 控制台</h1>
+      <p>先通过 Freebuff 的网页登录链路完成 <code>GitHub</code> 登录，再把多个账号加入本地账号池。发送请求时支持固定账号或轮询账号，本小姐已经帮你把这套流程串好了。</p>
+    </section>
+
+    <section class="layout">
+      <div class="stack">
+        <div class="panel stack">
+          <div class="row">
+            <strong>账号池</strong>
+            <button id="loginBtn" class="secondary">新增 GitHub 登录账号</button>
+          </div>
+          <div id="loginStatus" class="status">还没有开始登录。</div>
+          <div id="accountList" class="account-list"></div>
+          <button id="clearAccountsBtn" class="ghost">清空本地账号池</button>
+          <div class="tips">
+            账号信息只保存在当前浏览器的 <code>localStorage</code>，不会写死到仓库里。<br />
+            登录后会保存授权令牌，用于后续多账号轮询请求。
+          </div>
+        </div>
+
+        <div class="panel stack">
+          <div>
+            <label for="model">模型</label>
+            <select id="model"></select>
+          </div>
+          <div class="two-col">
+            <div>
+              <label for="rotationStrategy">账号分配</label>
+              <select id="rotationStrategy">
+                <option value="round_robin">轮询</option>
+                <option value="fixed">固定账号</option>
+              </select>
+            </div>
+            <div>
+              <label for="fixedAccount">固定账号</label>
+              <select id="fixedAccount"></select>
+            </div>
+          </div>
+          <div>
+            <label for="prompt">消息内容</label>
+            <textarea id="prompt" placeholder="例如：帮我总结一下这个项目现在的多账号调度逻辑"></textarea>
+          </div>
+          <button id="submit">发送请求</button>
+          <div id="status" class="status">正在加载模型列表…</div>
+          <div class="tips">
+            OpenAI 风格接口：<code>/api/v1/chat/completions</code><br />
+            登录接口：<code>/api/auth/login/start</code>、<code>/api/auth/login/status</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel stack">
+        <div class="row">
+          <strong>返回结果</strong>
+          <span id="usedAccount" class="chip">尚未发送请求</span>
+        </div>
+        <pre id="result">等待你的提问…</pre>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'freebuff2api.accounts';
+    const ACCESS_STORAGE_KEY = 'freebuff2api.access-password';
+    const POLL_INTERVAL_MS = 3000;
+    const POLL_TIMEOUT_MS = 5 * 60 * 1000;
+
+    const gateWrap = document.getElementById('gateWrap');
+    const appRoot = document.getElementById('appRoot');
+    const accessPasswordInput = document.getElementById('accessPassword');
+    const unlockBtn = document.getElementById('unlockBtn');
+    const gateStatusNode = document.getElementById('gateStatus');
+    const modelSelect = document.getElementById('model');
+    const promptInput = document.getElementById('prompt');
+    const submitButton = document.getElementById('submit');
+    const statusNode = document.getElementById('status');
+    const resultNode = document.getElementById('result');
+    const usedAccountNode = document.getElementById('usedAccount');
+    const loginBtn = document.getElementById('loginBtn');
+    const clearAccountsBtn = document.getElementById('clearAccountsBtn');
+    const loginStatusNode = document.getElementById('loginStatus');
+    const accountListNode = document.getElementById('accountList');
+    const rotationStrategySelect = document.getElementById('rotationStrategy');
+    const fixedAccountSelect = document.getElementById('fixedAccount');
+
+    let accounts = loadAccounts();
+    let loginPolling = null;
+    let accessPassword = sessionStorage.getItem(ACCESS_STORAGE_KEY) || '';
+    let accessEnabled = false;
+
+    function loadAccounts() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      } catch {
+        return [];
+      }
+    }
+
+    function saveAccounts() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
+    }
+
+    function setStatus(node, text, type = '') {
+      node.textContent = text;
+      node.className = `status${type ? ` ${type}` : ''}`;
+    }
+
+    function upsertAccount(account) {
+      const index = accounts.findIndex((item) => item.email && item.email === account.email);
+      if (index >= 0) {
+        accounts[index] = account;
+      } else {
+        accounts.push(account);
+      }
+      saveAccounts();
+      renderAccounts();
+    }
+
+    function removeAccount(index) {
+      accounts.splice(index, 1);
+      saveAccounts();
+      renderAccounts();
+    }
+
+    function clearAccounts() {
+      accounts = [];
+      saveAccounts();
+      renderAccounts();
+      setStatus(loginStatusNode, '本地账号池已清空。', 'success');
+    }
+
+    function renderAccounts() {
+      if (!accounts.length) {
+        accountListNode.innerHTML = '<div class="empty">暂无账号，先点上面的“新增 GitHub 登录账号”。</div>';
+        fixedAccountSelect.innerHTML = '<option value="0">暂无账号</option>';
+        return;
+      }
+
+      accountListNode.innerHTML = accounts.map((account, index) => `
+        <div class="account-item">
+          <div class="account-top">
+            <div>
+              <div class="name">${escapeHtml(account.name || '未命名账号')}</div>
+              <div class="muted">${escapeHtml(account.email || '无邮箱')}</div>
+            </div>
+            <button class="ghost" data-remove-index="${index}">移除</button>
+          </div>
+          <div class="chips">
+            <span class="chip">#${index + 1}</span>
+            <span class="chip">${escapeHtml(account.tokenPreview || '无 Token')}</span>
+          </div>
+        </div>
+      `).join('');
+
+      fixedAccountSelect.innerHTML = accounts.map((account, index) => `
+        <option value="${index}">${escapeHtml(account.name || account.email || `账号 ${index + 1}`)}</option>
+      `).join('');
+
+      document.querySelectorAll('[data-remove-index]').forEach((button) => {
+        button.addEventListener('click', () => removeAccount(Number(button.dataset.removeIndex)));
+      });
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    async function loadModels() {
+      setStatus(statusNode, '正在加载模型列表…');
+      try {
+        const response = await fetch('/api/v1/models');
+        const data = await response.json();
+        const models = data.data || [];
+        modelSelect.innerHTML = models.map((item) => `<option value="${item.id}">${item.id}</option>`).join('');
+        setStatus(statusNode, `已加载 ${models.length} 个模型`, 'success');
+      } catch (error) {
+        setStatus(statusNode, `模型加载失败：${error.message}`, 'error');
+      }
+    }
+
+    function revealApp() {
+      gateWrap.classList.add('hidden');
+      appRoot.classList.remove('hidden');
+      renderAccounts();
+      loadModels();
+    }
+
+    async function bootstrapAccess() {
+      try {
+        const response = await fetch('/api/health');
+        const data = await response.json();
+        accessEnabled = Boolean(data.accessPasswordEnabled);
+
+        if (!accessEnabled) {
+          revealApp();
+          return;
+        }
+
+        gateWrap.classList.remove('hidden');
+        if (accessPassword) {
+          accessPasswordInput.value = accessPassword;
+          await unlock();
+        }
+      } catch (error) {
+        gateWrap.classList.remove('hidden');
+        setStatus(gateStatusNode, `初始化失败：${error.message}`, 'error');
+      }
+    }
+
+    async function unlock() {
+      const password = accessPasswordInput.value;
+      unlockBtn.disabled = true;
+      setStatus(gateStatusNode, '正在验证密码…');
+
+      try {
+        const response = await fetch('/api/auth/access', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password }),
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.passed) {
+          throw new Error(data?.error?.message || '密码错误');
+        }
+
+        accessPassword = password;
+        sessionStorage.setItem(ACCESS_STORAGE_KEY, accessPassword);
+        setStatus(gateStatusNode, '验证通过，正在进入系统。', 'success');
+        revealApp();
+      } catch (error) {
+        setStatus(gateStatusNode, error.message, 'error');
+      } finally {
+        unlockBtn.disabled = false;
+      }
+    }
+
+    async function startLogin() {
+      if (loginPolling) {
+        setStatus(loginStatusNode, '已经有登录流程在进行中。', 'error');
+        return;
+      }
+
+      loginBtn.disabled = true;
+      setStatus(loginStatusNode, '正在申请登录链接…');
+
+      try {
+        const response = await fetch('/api/auth/login/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: accessPassword }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data?.error?.message || '登录启动失败');
+        }
+
+        window.open(data.loginUrl, '_blank', 'noopener,noreferrer');
+        setStatus(loginStatusNode, '登录页面已打开，请在新窗口完成 GitHub 登录授权。', 'success');
+        loginPolling = pollLoginStatus(data);
+        await loginPolling;
+      } catch (error) {
+        setStatus(loginStatusNode, `登录失败：${error.message}`, 'error');
+      } finally {
+        loginPolling = null;
+        loginBtn.disabled = false;
+      }
+    }
+
+    async function pollLoginStatus(payload) {
+      const startedAt = Date.now();
+
+      while (Date.now() - startedAt < POLL_TIMEOUT_MS) {
+        const query = new URLSearchParams({ ...payload, accessPassword }).toString();
+        const response = await fetch(`/api/auth/login/status?${query}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.error?.message || '轮询状态失败');
+        }
+
+        if (data.authorized && data.rawAccount) {
+          upsertAccount(data.rawAccount);
+          setStatus(loginStatusNode, `账号 ${data.account?.email || data.account?.name || '未知用户'} 登录成功，已加入账号池。`, 'success');
+          return;
+        }
+
+        setStatus(loginStatusNode, '等待你在 GitHub 页面完成登录…');
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+      }
+
+      throw new Error('登录轮询超时');
+    }
+
+    async function runChat() {
+      const prompt = promptInput.value.trim();
+      if (!prompt) {
+        setStatus(statusNode, '先输入点内容，别让接口陪你发呆。', 'error');
+        return;
+      }
+      if (!accounts.length) {
+        setStatus(statusNode, '先至少登录一个账号。', 'error');
+        return;
+      }
+
+      submitButton.disabled = true;
+      usedAccountNode.textContent = '请求处理中';
+      setStatus(statusNode, '请求发送中…');
+      resultNode.textContent = '思考中…';
+
+      try {
+        const strategy = rotationStrategySelect.value;
+        const response = await fetch('/api/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: modelSelect.value,
+            messages: [{ role: 'user', content: prompt }],
+            stream: false,
+            rotationStrategy: strategy,
+            accountIndex: Number(fixedAccountSelect.value || 0),
+            accounts,
+            accessPassword,
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data?.error?.message || '请求失败');
+        }
+
+        resultNode.textContent = data?.choices?.[0]?.message?.content || JSON.stringify(data, null, 2);
+        const account = data.account || {};
+        usedAccountNode.textContent = `${account.strategy === 'fixed' ? '固定' : '轮询'} · ${account.email || account.name || '未知账号'}`;
+        setStatus(statusNode, `请求完成，使用账号序号 ${Number(account.index) + 1}`, 'success');
+      } catch (error) {
+        resultNode.textContent = error.message;
+        usedAccountNode.textContent = '请求失败';
+        setStatus(statusNode, '请求失败', 'error');
+      } finally {
+        submitButton.disabled = false;
+      }
+    }
+
+    unlockBtn.addEventListener('click', unlock);
+    accessPasswordInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        unlock();
+      }
+    });
+    loginBtn.addEventListener('click', startLogin);
+    clearAccountsBtn.addEventListener('click', clearAccounts);
+    submitButton.addEventListener('click', runChat);
+    promptInput.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        runChat();
+      }
+    });
+
+    bootstrapAccess();
+  </script>
+</body>
+</html>
