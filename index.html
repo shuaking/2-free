@@ -48,17 +48,6 @@ button,.bookmarklet-link{display:inline-flex;align-items:center;justify-content:
         <div id="manualStatus" class="status">支持直接粘贴 Token，名称会自动生成</div>
       </section>
       <section class="card stack">
-        <div class="row"><strong>③ 快速测试</strong><button id="quickTestBtn" class="secondary">发送测试消息</button></div>
-        <div><label for="prompt">消息内容 <span class="small muted">(Ctrl+Enter 发送)</span></label><textarea id="prompt" placeholder="输入测试消息，例如：你好"></textarea></div>
-        <div class="two">
-          <div><label for="model">模型</label><select id="model"></select></div>
-          <div><label for="rotationStrategy">分配策略</label><select id="rotationStrategy"><option value="round_robin">轮询</option><option value="fixed">固定账号</option></select></div>
-        </div>
-        <div><label><input type="checkbox" id="streamMode" style="width:auto;min-height:auto;margin-right:6px"><span class="small">启用流式响应（实时逐字显示）</span></label></div>
-        <button id="submit">发送请求</button>
-        <div id="status" class="status">正在加载模型列表…</div>
-      </section>
-      <section class="card stack">
         <div class="row"><strong>账号池管理</strong><button id="clearAccountsBtn" class="ghost">清空</button></div>
         <div id="accountList" class="account-list"></div>
         <div class="tips">本地存储 · 共 <span id="accountCount">0</span> 个账号</div>
@@ -85,6 +74,17 @@ button,.bookmarklet-link{display:inline-flex;align-items:center;justify-content:
       </div>
       <pre id="result">等待你的提问…</pre>
       <div class="small muted" id="statsInfo" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(132,160,216,.1)">暂无统计数据</div>
+    </section>
+    <section class="card stack">
+      <div class="row"><strong>快速测试</strong><button id="quickTestBtn" class="secondary">发送测试消息</button></div>
+      <div><label for="prompt">消息内容 <span class="small muted">(Ctrl+Enter 发送)</span></label><textarea id="prompt" placeholder="输入测试消息，例如：你好"></textarea></div>
+      <div class="two">
+        <div><label for="model">模型</label><select id="model"></select></div>
+        <div><label for="rotationStrategy">分配策略</label><select id="rotationStrategy"><option value="round_robin">轮询</option><option value="fixed">固定账号</option></select></div>
+      </div>
+      <div><label><input type="checkbox" id="streamMode" style="width:auto;min-height:auto;margin-right:6px"><span class="small">启用流式响应（实时逐字显示）</span></label></div>
+      <button id="submit">发送请求</button>
+      <div id="status" class="status">正在加载模型列表…</div>
     </section>
   </section>
 </main>
