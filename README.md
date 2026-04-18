@@ -20,12 +20,12 @@
 
 - `DEFAULT_MODEL`: 选填，默认模型名
 - `ACCESS_PASSWORD`: 选填，设置后首页会先要求输入访问密码
-- `BLOB_READ_WRITE_TOKEN`: 选填，配置后启用服务端账号池持久化
+- `POSTGRES_URL`（由 Vercel Postgres/Neon 自动注入）：配置后启用服务端账号池持久化
 
 ### 账号池持久化开关说明
 
-- 配置了 `BLOB_READ_WRITE_TOKEN`：账号池保存到服务端（Vercel Blob），多设备可共享
-- 未配置 `BLOB_READ_WRITE_TOKEN`：前端会退回本地缓存，仅当前浏览器可见
+- 配置了 Vercel Postgres（Neon）：账号池保存到服务端，多设备可共享
+- 未配置 Postgres：前端会退回本地缓存，仅当前浏览器可见
 
 ## 推荐使用流程
 
@@ -146,8 +146,8 @@
 ### 持久化状态验证（推荐）
 
 1. 先访问 `GET /api/health`，确认：
-   - `accountStorage: "vercel-blob"`
-   - `blobConfigured: true`
+   - `accountStorage: "vercel-postgres"`
+   - `postgresConfigured: true`
 2. 在页面新增一个账号后，访问 `GET /api/accounts`：
    - 能看到新增账号，说明已写入服务端
 3. 换浏览器或无痕模式再打开页面：
@@ -162,22 +162,22 @@ vercel
 **环境变量配置：**
 - `DEFAULT_MODEL`（可选）：默认模型名称
 - `ACCESS_PASSWORD`（可选）：首页访问密码，设置后需要验证才能进入
-- `BLOB_READ_WRITE_TOKEN`（可选）：服务端账号池持久化
+- `POSTGRES_URL`（自动注入）：服务端账号池持久化
 
-> 注意：新增 `@vercel/blob` 依赖后，需要重新部署一次，旧部署不会自动启用服务端账号池。
+> 注意：新增 `@vercel/postgres` 依赖后，需要重新部署一次，旧部署不会自动启用服务端账号池。
 
 ## 技术栈
 
 - 纯静态 HTML + JavaScript（无构建步骤）
 - Vercel Serverless Functions（API 路由）
-- Vercel Blob（账号池服务端持久化）
+- Vercel Postgres（Neon，账号池服务端持久化）
 - localStorage（服务不可用时本地兜底）
 - Bookmarklet（跨域 Token 回传）
 
 ## 当前限制
 
 - **流式响应**：`stream: true` 暂未支持
-- **账号持久化**：配置 `BLOB_READ_WRITE_TOKEN` 后保存在服务端，未配置时退回本地缓存
+- **账号持久化**：配置 Vercel Postgres（Neon）后保存在服务端，未配置时退回本地缓存
 - **访问控制**：首页密码是应用层保护，不是完整的用户权限系统
 - **登录依赖**：Bookmarklet 依赖 `freebuff.com` 的有效登录会话
 - **Serverless 限制**：轮询计数和 `runId` 缓存在冷启动后会重置

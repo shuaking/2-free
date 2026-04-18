@@ -12,17 +12,13 @@ function readAccessPassword(req, body) {
   return '';
 }
 
-function deny(res) {
-  res.status(401).json({ error: { message: '访问密码错误' } });
-}
-
 module.exports = async function handler(req, res) {
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     const accessPassword = readAccessPassword(req, body);
 
     if (isAccessPasswordEnabled() && !verifyAccessPassword(accessPassword)) {
-      deny(res);
+      res.status(401).json({ error: { message: '访问密码错误' } });
       return;
     }
 

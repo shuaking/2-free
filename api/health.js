@@ -16,7 +16,6 @@ module.exports = async function handler(req, res) {
     accountMode: 'server-pool-round-robin',
     accessPasswordEnabled: isAccessPasswordEnabled(),
     accountStorage: storage.mode,
-    blobConfigured: storage.configured,
+    postgresConfigured: storage.configured,
   });
 };
-
