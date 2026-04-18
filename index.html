@@ -6,10 +6,10 @@
 <title>Freebuff2API Web</title>
 <style>
 :root{color-scheme:dark;--bg:#08111f;--panel:rgba(13,24,42,.9);--line:rgba(120,170,255,.18);--text:#e8f0ff;--muted:#91a7d3;--brand:#67a2ff;--brand2:#8f6dff;--ok:#5dd6a2;--danger:#ff7f96}
-*{box-sizing:border-box}html,body{height:100%}body{margin:0;height:100vh;overflow:hidden;color:var(--text);font-family:'IBM Plex Sans','Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:radial-gradient(circle at top,rgba(103,162,255,.24),transparent 32%),radial-gradient(circle at right,rgba(143,109,255,.16),transparent 26%),var(--bg)}
-.hidden{display:none!important}.wrap{width:min(1240px,calc(100vw - 20px));height:calc(100vh - 16px);margin:8px auto;display:grid;gap:8px;grid-template-rows:auto 1fr}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:0 12px 36px rgba(0,0,0,.22)}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;min-height:100vh;overflow:auto;color:var(--text);font-family:'IBM Plex Sans','Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:radial-gradient(circle at top,rgba(103,162,255,.24),transparent 32%),radial-gradient(circle at right,rgba(143,109,255,.16),transparent 26%),var(--bg)}
+.hidden{display:none!important}.wrap{width:min(1240px,calc(100vw - 20px));min-height:calc(100vh - 16px);margin:8px auto;display:grid;gap:8px;grid-template-rows:auto 1fr}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:0 12px 36px rgba(0,0,0,.22)}
 .hero{padding:10px}.hero h1{margin:4px 0;font-size:clamp(20px,3vw,28px);line-height:1.2}.hero .badge{margin-bottom:2px}.muted,.status,.tips{color:var(--muted);line-height:1.35}.badge{display:inline-block;padding:3px 9px;border-radius:999px;background:rgba(103,162,255,.16);color:#bed4ff;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
-.layout{display:grid;grid-template-columns:360px 1fr;gap:8px;align-items:stretch;min-height:0}.stack{display:grid;gap:8px}.row{display:flex;align-items:center;justify-content:space-between;gap:8px}.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.layout{display:grid;grid-template-columns:360px 1fr;gap:8px;align-items:stretch;min-height:0;max-height:calc(100vh - 150px)}.stack{display:grid;gap:8px}.row{display:flex;align-items:center;justify-content:space-between;gap:8px}.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .left-panel{min-height:0;overflow:auto;padding-right:3px}
 .right-panel{display:grid;gap:8px;min-height:0;overflow:hidden}
 .composer-card{border-color:rgba(103,162,255,.28);position:sticky;top:12px;z-index:3}
