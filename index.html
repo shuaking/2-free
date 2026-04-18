@@ -166,8 +166,6 @@ const copyResultBtn=document.getElementById('copyResultBtn');
 const clearResultBtn=document.getElementById('clearResultBtn');
 const requestInfoNode=document.getElementById('requestInfo');
 const statsInfoNode=document.getElementById('statsInfo');
-const modelSummaryNode=document.getElementById('modelSummary');
-const strategySummaryNode=document.getElementById('strategySummary');
 const openSettingsBtn=document.getElementById('openSettingsBtn');
 const closeSettingsBtn=document.getElementById('closeSettingsBtn');
 const settingsDrawer=document.getElementById('settingsDrawer');
@@ -184,7 +182,6 @@ function scrollResultToBottom(){if(shouldAutoScrollResult()){resultNode.scrollTo
 const resultObserver=new MutationObserver(()=>{scrollResultToBottom()});
 resultObserver.observe(resultNode,{childList:true,subtree:true,characterData:true});
 function setStatus(node,text,type){node.textContent=text;node.className='status'+(type?' '+type:'')}
-function updateModelStrategySummary(){if(modelSummaryNode){modelSummaryNode.textContent=modelSelect.value||'-'}if(strategySummaryNode){strategySummaryNode.textContent=rotationStrategySelect.value==='fixed'?'固定':'轮询'}}
 function openSettings(){settingsDrawer.classList.remove('hidden');settingsOverlay.classList.remove('hidden');settingsDrawer.setAttribute('aria-hidden','false')}
 function closeSettings(){settingsDrawer.classList.add('hidden');settingsOverlay.classList.add('hidden');settingsDrawer.setAttribute('aria-hidden','true')}
 function hideLoginLink(){loginLinkNode.classList.add('hidden');loginLinkNode.innerHTML=''}
@@ -196,7 +193,7 @@ function normalizeLocalAccount(account){return{ id:account.id||null, name:accoun
 function escapeHtml(text){return String(text).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
 function renderAccounts(){accountCountNode.textContent=accounts.length;if(!accounts.length){accountListNode.innerHTML='<div class="empty">暂无账号，使用上方方式导入</div>';fixedAccountSelect.innerHTML='<option value="0">暂无账号</option>';return}accountListNode.innerHTML=accounts.map((account,index)=>{const stats=account.stats||{total:0,success:0,failed:0,lastUsed:null};const successRate=stats.total>0?Math.round((stats.success/stats.total)*100):0;const lastUsed=stats.lastUsed?new Date(stats.lastUsed).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'从未使用';return`<div class="account-item"><div class="row"><div><div><strong>${escapeHtml(account.name||'未命名账号')}</strong></div><div class="muted small">${escapeHtml(account.email||'无邮箱')}</div></div><button class="ghost" data-remove-index="${index}">移除</button></div><div class="chips"><span class="chip">#${index+1}</span><span class="chip">${escapeHtml(account.tokenPreview||tokenPreview(account.authToken||''))}</span><span class="chip">使用 ${stats.total} 次</span><span class="chip ${successRate>=80?'':'muted'}">成功率 ${successRate}%</span></div><div class="small muted">最后使用：${lastUsed}</div></div>`}).join('');fixedAccountSelect.innerHTML=accounts.map((account,index)=>`<option value="${index}">${escapeHtml(account.name||account.email||('账号 '+(index+1)))}</option>`).join('');document.querySelectorAll('[data-remove-index]').forEach(button=>button.addEventListener('click',()=>{accounts.splice(Number(button.dataset.removeIndex),1);saveAccounts();renderAccounts()}))}
 function upsertAccount(account){const normalized=normalizeLocalAccount(account);const index=accounts.findIndex(item=>item.email&&normalized.email&&item.email===normalized.email);if(index>=0){accounts[index]=normalized}else{accounts.push(normalized)}saveAccounts();renderAccounts()}
-async function loadModels(){setStatus(statusNode,'正在加载模型列表…');try{const response=await fetch('/api/v1/models');const data=await response.json();const models=data.data||[];modelSelect.innerHTML=models.map(item=>`<option value="${item.id}">${item.id}</option>`).join('');if(prefs.model&&models.some(item=>item.id===prefs.model)){modelSelect.value=prefs.model}if(prefs.rotationStrategy&&['round_robin','fixed'].includes(prefs.rotationStrategy)){rotationStrategySelect.value=prefs.rotationStrategy}if(typeof prefs.streamMode==='boolean'){streamModeCheckbox.checked=prefs.streamMode}if(typeof prefs.autoScrollResult==='boolean'&&autoScrollResultCheckbox){autoScrollResultCheckbox.checked=prefs.autoScrollResult}updateModelStrategySummary();setStatus(statusNode,'已加载 '+models.length+' 个模型','success')}catch(error){setStatus(statusNode,'模型加载失败：'+error.message,'error')}}
+async function loadModels(){setStatus(statusNode,'正在加载模型列表…');try{const response=await fetch('/api/v1/models');const data=await response.json();const models=data.data||[];modelSelect.innerHTML=models.map(item=>`<option value="${item.id}">${item.id}</option>`).join('');if(prefs.model&&models.some(item=>item.id===prefs.model)){modelSelect.value=prefs.model}if(prefs.rotationStrategy&&['round_robin','fixed'].includes(prefs.rotationStrategy)){rotationStrategySelect.value=prefs.rotationStrategy}if(typeof prefs.streamMode==='boolean'){streamModeCheckbox.checked=prefs.streamMode}if(typeof prefs.autoScrollResult==='boolean'&&autoScrollResultCheckbox){autoScrollResultCheckbox.checked=prefs.autoScrollResult}setStatus(statusNode,'已加载 '+models.length+' 个模型','success')}catch(error){setStatus(statusNode,'模型加载失败：'+error.message,'error')}}
 function revealApp(){gateWrap.classList.add('hidden');appRoot.classList.remove('hidden');renderAccounts();loadModels();buildBookmarklet();consumeBookmarkletPayload()}
 async function unlock(){const password=accessPasswordInput.value;unlockBtn.disabled=true;setStatus(gateStatusNode,'正在验证密码…');try{const response=await fetch('/api/auth/access',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});const data=await response.json();if(!response.ok||!data.passed){throw new Error((data&&data.error&&data.error.message)||'密码错误')}accessPassword=password;sessionStorage.setItem(ACCESS_STORAGE_KEY,accessPassword);setStatus(gateStatusNode,'验证通过，正在进入系统。','success');revealApp()}catch(error){setStatus(gateStatusNode,error.message,'error')}finally{unlockBtn.disabled=false}}
 async function bootstrapAccess(){try{const response=await fetch('/api/health');const data=await response.json();if(!data.accessPasswordEnabled){revealApp();return}gateWrap.classList.remove('hidden');if(accessPassword){accessPasswordInput.value=accessPassword;await unlock()}}catch(error){gateWrap.classList.remove('hidden');setStatus(gateStatusNode,'初始化失败：'+error.message,'error')}}
@@ -222,15 +219,14 @@ quickTestBtn.addEventListener('click',()=>{if(!accounts.length){setStatus(status
 promptInput.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter')runChat()});
 copyResultBtn.addEventListener('click',async()=>{const text=resultNode.textContent;if(!text||text==='等待你的提问…'){setStatus(statusNode,'没有可复制的内容','error');return}try{await navigator.clipboard.writeText(text);setStatus(statusNode,'结果已复制到剪贴板','success')}catch{setStatus(statusNode,'复制失败，请手动选择复制','error')}});
 clearResultBtn.addEventListener('click',()=>{resultNode.textContent='等待你的提问…';usedAccountNode.textContent='尚未发送';requestInfoNode.textContent='等待发送请求';setStatus(statusNode,'结果已清空','success')});
-modelSelect.addEventListener('change',()=>{updatePref('model',modelSelect.value);updateModelStrategySummary()});
-rotationStrategySelect.addEventListener('change',()=>{updatePref('rotationStrategy',rotationStrategySelect.value);updateModelStrategySummary()});
+modelSelect.addEventListener('change',()=>{updatePref('model',modelSelect.value)});
+rotationStrategySelect.addEventListener('change',()=>{updatePref('rotationStrategy',rotationStrategySelect.value)});
 streamModeCheckbox.addEventListener('change',()=>updatePref('streamMode',streamModeCheckbox.checked));
 if(autoScrollResultCheckbox){autoScrollResultCheckbox.addEventListener('change',()=>updatePref('autoScrollResult',autoScrollResultCheckbox.checked))}
 openSettingsBtn.addEventListener('click',openSettings);
 closeSettingsBtn.addEventListener('click',closeSettings);
 settingsOverlay.addEventListener('click',closeSettings);
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!settingsDrawer.classList.contains('hidden'))closeSettings()});
-updateModelStrategySummary();
 bootstrapAccess();
 </script>
 </body>
