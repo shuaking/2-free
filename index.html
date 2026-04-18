@@ -123,6 +123,16 @@ button,.bookmarklet-link{display:inline-flex;align-items:center;justify-content:
       <div><label><input type="checkbox" id="autoScrollResult" checked style="width:auto;min-height:auto;margin-right:6px"><span class="small">结果区自动滚动</span></label></div>
       <div><label for="fixedAccount">固定账号选择</label><select id="fixedAccount"></select></div>
     </section>
+    <section class="card stack">
+      <div class="row"><strong>客户端 Key</strong><span class="chip">给其他客户端用</span></div>
+      <div><label for="customApiKeyInput">自定义 Key</label><input id="customApiKeyInput" type="text" placeholder="例如：fbk_xxx" /></div>
+      <button id="generateCustomApiKeyBtn" class="ghost">一键生成随机 Key</button>
+      <div class="two">
+        <button id="saveCustomApiKeyBtn" class="secondary">保存 Key</button>
+        <button id="deleteCustomApiKeyBtn" class="ghost">删除 Key</button>
+      </div>
+      <div id="customApiKeyStatus" class="status">未加载 Key 状态</div>
+    </section>
   </div>
 </aside>
 <script>
@@ -171,6 +181,11 @@ const openSettingsBtn=document.getElementById('openSettingsBtn');
 const closeSettingsBtn=document.getElementById('closeSettingsBtn');
 const settingsDrawer=document.getElementById('settingsDrawer');
 const settingsOverlay=document.getElementById('settingsOverlay');
+const customApiKeyInput=document.getElementById('customApiKeyInput');
+const generateCustomApiKeyBtn=document.getElementById('generateCustomApiKeyBtn');
+const saveCustomApiKeyBtn=document.getElementById('saveCustomApiKeyBtn');
+const deleteCustomApiKeyBtn=document.getElementById('deleteCustomApiKeyBtn');
+const customApiKeyStatusNode=document.getElementById('customApiKeyStatus');
 let accounts=loadAccountsLocal();
 let loginPolling=null;
 let accountSyncTimer=null;
@@ -184,6 +199,7 @@ function scrollResultToBottom(){if(shouldAutoScrollResult()){resultNode.scrollTo
 const resultObserver=new MutationObserver(()=>{scrollResultToBottom()});
 resultObserver.observe(resultNode,{childList:true,subtree:true,characterData:true});
 function setStatus(node,text,type){node.textContent=text;node.className='status'+(type?' '+type:'')}
+function setCustomApiKeyStatus(text,type){setStatus(customApiKeyStatusNode,text,type)}
 function openSettings(){settingsDrawer.classList.remove('hidden');settingsOverlay.classList.remove('hidden');settingsDrawer.setAttribute('aria-hidden','false')}
 function closeSettings(){settingsDrawer.classList.add('hidden');settingsOverlay.classList.add('hidden');settingsDrawer.setAttribute('aria-hidden','true')}
 function hideLoginLink(){loginLinkNode.classList.add('hidden');loginLinkNode.innerHTML=''}
@@ -193,6 +209,10 @@ function saveAccountsLocal(){localStorage.setItem(STORAGE_KEY,JSON.stringify(acc
 function setAccountStorageInfo(text,type){if(!accountStorageInfoNode)return;accountStorageInfoNode.textContent=text;if(type==='error'){accountStorageInfoNode.style.color='var(--danger)'}else if(type==='success'){accountStorageInfoNode.style.color='var(--ok)'}else{accountStorageInfoNode.style.color='var(--muted)'}}
 async function loadAccountsFromServer(){try{const query=new URLSearchParams({accessPassword}).toString();const response=await fetch('/api/accounts?'+query);const data=await response.json();if(!response.ok){throw new Error((data&&data.error&&data.error.message)||'加载账号池失败')}accounts=Array.isArray(data.accounts)?data.accounts:[];saveAccountsLocal();renderAccounts();setAccountStorageInfo('账号池存储：服务端持久化（Postgres） · 共 '+accounts.length+' 个账号','success')}catch(error){accounts=loadAccountsLocal();renderAccounts();setAccountStorageInfo('账号池存储：本地缓存兜底 · 共 '+accounts.length+' 个账号','error');setStatus(manualStatusNode,'服务端账号池加载失败：'+error.message,'error')}}
 async function syncAccountsToServer(){try{const response=await fetch('/api/accounts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accessPassword,accounts})});const data=await response.json();if(!response.ok){throw new Error((data&&data.error&&data.error.message)||'同步失败')}setAccountStorageInfo('账号池存储：服务端持久化（Postgres） · 共 '+accounts.length+' 个账号','success')}catch(error){setAccountStorageInfo('账号池存储：本地缓存兜底 · 共 '+accounts.length+' 个账号','error');setStatus(manualStatusNode,'服务端账号池同步失败：'+error.message,'error')}}
+async function loadCustomApiKeyStatus(){try{const query=new URLSearchParams({accessPassword}).toString();const response=await fetch('/api/auth/apikey?'+query);const data=await response.json();if(!response.ok){throw new Error((data&&data.error&&data.error.message)||'加载 Key 状态失败')}if(data.enabled){setCustomApiKeyStatus('已启用客户端 Key：'+(data.masked||''),'success')}else{setCustomApiKeyStatus('未设置客户端 Key','')} }catch(error){setCustomApiKeyStatus('Key 状态加载失败：'+error.message,'error')}}
+async function saveCustomApiKey(){const key=String(customApiKeyInput.value||'').trim();if(!key){setCustomApiKeyStatus('请先输入自定义 Key','error');return}saveCustomApiKeyBtn.disabled=true;try{const response=await fetch('/api/auth/apikey',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accessPassword,key})});const data=await response.json();if(!response.ok){throw new Error((data&&data.error&&data.error.message)||'保存 Key 失败')}customApiKeyInput.value='';setCustomApiKeyStatus('客户端 Key 已保存：'+(data.masked||''),'success')}catch(error){setCustomApiKeyStatus('保存失败：'+error.message,'error')}finally{saveCustomApiKeyBtn.disabled=false}}
+async function deleteCustomApiKey(){deleteCustomApiKeyBtn.disabled=true;try{const response=await fetch('/api/auth/apikey',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({accessPassword})});const data=await response.json();if(!response.ok){throw new Error((data&&data.error&&data.error.message)||'删除 Key 失败')}setCustomApiKeyStatus('客户端 Key 已删除','success')}catch(error){setCustomApiKeyStatus('删除失败：'+error.message,'error')}finally{deleteCustomApiKeyBtn.disabled=false}}
+function generateRandomCustomApiKey(){const randomPart=(typeof crypto!=='undefined'&&crypto.getRandomValues)?Array.from(crypto.getRandomValues(new Uint8Array(16))).map(v=>v.toString(16).padStart(2,'0')).join(''):Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);const key='fbk_'+randomPart.slice(0,32);customApiKeyInput.value=key;setCustomApiKeyStatus('已生成随机 Key，请点击“保存 Key”生效','success')}
 function scheduleAccountSync(){if(accountSyncTimer){clearTimeout(accountSyncTimer)}accountSyncTimer=setTimeout(()=>{syncAccountsToServer()},300)}
 function saveAccounts(){saveAccountsLocal();scheduleAccountSync()}
 async function saveAccountsNow(){saveAccountsLocal();if(accountSyncTimer){clearTimeout(accountSyncTimer);accountSyncTimer=null}await syncAccountsToServer()}
@@ -202,7 +222,7 @@ function escapeHtml(text){return String(text).replaceAll('&','&amp;').replaceAll
 function renderAccounts(){accountCountNode.textContent=accounts.length;if(!accounts.length){accountListNode.innerHTML='<div class="empty">暂无账号，使用上方方式导入</div>';fixedAccountSelect.innerHTML='<option value="0">暂无账号</option>';return}accountListNode.innerHTML=accounts.map((account,index)=>{const stats=account.stats||{total:0,success:0,failed:0,lastUsed:null};const successRate=stats.total>0?Math.round((stats.success/stats.total)*100):0;const lastUsed=stats.lastUsed?new Date(stats.lastUsed).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'从未使用';return`<div class="account-item"><div class="row"><div><div><strong>${escapeHtml(account.name||'未命名账号')}</strong></div><div class="muted small">${escapeHtml(account.email||'无邮箱')}</div></div><button class="ghost" data-remove-index="${index}">移除</button></div><div class="chips"><span class="chip">#${index+1}</span><span class="chip">${escapeHtml(account.tokenPreview||tokenPreview(account.authToken||''))}</span><span class="chip">使用 ${stats.total} 次</span><span class="chip ${successRate>=80?'':'muted'}">成功率 ${successRate}%</span></div><div class="small muted">最后使用：${lastUsed}</div></div>`}).join('');fixedAccountSelect.innerHTML=accounts.map((account,index)=>`<option value="${index}">${escapeHtml(account.name||account.email||('账号 '+(index+1)))}</option>`).join('');document.querySelectorAll('[data-remove-index]').forEach(button=>button.addEventListener('click',()=>{accounts.splice(Number(button.dataset.removeIndex),1);saveAccounts();renderAccounts()}))}
 async function upsertAccount(account,options){const normalized=normalizeLocalAccount(account);const index=accounts.findIndex(item=>item.email&&normalized.email&&item.email===normalized.email);if(index>=0){accounts[index]=normalized}else{accounts.push(normalized)}renderAccounts();if(options&&options.immediateSync){await saveAccountsNow();return}saveAccounts()}
 async function loadModels(){setStatus(statusNode,'正在加载模型列表…');try{const response=await fetch('/api/v1/models');const data=await response.json();const models=data.data||[];modelSelect.innerHTML=models.map(item=>`<option value="${item.id}">${item.id}</option>`).join('');if(prefs.model&&models.some(item=>item.id===prefs.model)){modelSelect.value=prefs.model}if(prefs.rotationStrategy&&['round_robin','fixed'].includes(prefs.rotationStrategy)){rotationStrategySelect.value=prefs.rotationStrategy}if(typeof prefs.streamMode==='boolean'){streamModeCheckbox.checked=prefs.streamMode}if(typeof prefs.autoScrollResult==='boolean'&&autoScrollResultCheckbox){autoScrollResultCheckbox.checked=prefs.autoScrollResult}setStatus(statusNode,'已加载 '+models.length+' 个模型','success')}catch(error){setStatus(statusNode,'模型加载失败：'+error.message,'error')}}
-function revealApp(){gateWrap.classList.add('hidden');appRoot.classList.remove('hidden');renderAccounts();setAccountStorageInfo('账号池存储：正在连接服务端…');loadAccountsFromServer();loadModels();buildBookmarklet();consumeBookmarkletPayload()}
+function revealApp(){gateWrap.classList.add('hidden');appRoot.classList.remove('hidden');renderAccounts();setAccountStorageInfo('账号池存储：正在连接服务端…');loadAccountsFromServer();loadCustomApiKeyStatus();loadModels();buildBookmarklet();consumeBookmarkletPayload()}
 async function unlock(){const password=accessPasswordInput.value;unlockBtn.disabled=true;setStatus(gateStatusNode,'正在验证密码…');try{const response=await fetch('/api/auth/access',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});const data=await response.json();if(!response.ok||!data.passed){throw new Error((data&&data.error&&data.error.message)||'密码错误')}accessPassword=password;sessionStorage.setItem(ACCESS_STORAGE_KEY,accessPassword);setStatus(gateStatusNode,'验证通过，正在进入系统。','success');revealApp()}catch(error){setStatus(gateStatusNode,error.message,'error')}finally{unlockBtn.disabled=false}}
 async function bootstrapAccess(){try{const response=await fetch('/api/health');const data=await response.json();if(!data.accessPasswordEnabled){revealApp();return}gateWrap.classList.remove('hidden');if(accessPassword){accessPasswordInput.value=accessPassword;await unlock()}}catch(error){gateWrap.classList.remove('hidden');setStatus(gateStatusNode,'初始化失败：'+error.message,'error')}}
 function openPendingLoginWindow(){return window.open('','_blank','noopener,noreferrer')}
@@ -234,6 +254,9 @@ if(autoScrollResultCheckbox){autoScrollResultCheckbox.addEventListener('change',
 openSettingsBtn.addEventListener('click',openSettings);
 closeSettingsBtn.addEventListener('click',closeSettings);
 settingsOverlay.addEventListener('click',closeSettings);
+saveCustomApiKeyBtn.addEventListener('click',saveCustomApiKey);
+deleteCustomApiKeyBtn.addEventListener('click',deleteCustomApiKey);
+generateCustomApiKeyBtn.addEventListener('click',generateRandomCustomApiKey);
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!settingsDrawer.classList.contains('hidden'))closeSettings()});
 bootstrapAccess();
 </script>

@@ -1,5 +1,6 @@
 const { getDefaultModel, isAccessPasswordEnabled } = require('../lib/freebuff');
 const { getStorageStatus } = require('../lib/account-storage');
+const { getCustomKeyStatus } = require('../lib/custom-key');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -8,6 +9,11 @@ module.exports = async function handler(req, res) {
   }
 
   const storage = getStorageStatus();
+  let customKeyEnabled = false;
+  try {
+    const keyStatus = await getCustomKeyStatus();
+    customKeyEnabled = Boolean(keyStatus.enabled);
+  } catch {}
   res.status(200).json({
     status: 'ok',
     model: getDefaultModel(),
@@ -15,6 +21,7 @@ module.exports = async function handler(req, res) {
     loginMode: 'github-via-freebuff',
     accountMode: 'server-pool-round-robin',
     accessPasswordEnabled: isAccessPasswordEnabled(),
+    customApiKeyEnabled: customKeyEnabled,
     accountStorage: storage.mode,
     postgresConfigured: storage.configured,
   });

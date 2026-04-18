@@ -1,4 +1,11 @@
-const { createChatCompletion, createChatCompletionStream, verifyAccessPassword, isAccessPasswordEnabled } = require('../../../lib/freebuff');
+const {
+  createChatCompletion,
+  createChatCompletionStream,
+  verifyAccessPassword,
+  isAccessPasswordEnabled,
+} = require('../../../lib/freebuff');
+const { readAccountsFromStorage } = require('../../../lib/account-storage');
+const { verifyCustomKey, extractApiKey } = require('../../../lib/custom-key');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -8,14 +15,22 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    const apiKey = extractApiKey(req, body);
+    const apiKeyPassed = await verifyCustomKey(apiKey);
 
-    if (isAccessPasswordEnabled() && !verifyAccessPassword(String(body.accessPassword || ''))) {
+    if (!apiKeyPassed && isAccessPasswordEnabled() && !verifyAccessPassword(String(body.accessPassword || ''))) {
       res.status(401).json({
         error: {
-          message: '访问密码错误',
+          message: '访问密码错误或客户端 Key 无效',
         },
       });
       return;
+    }
+
+    if (!Array.isArray(body.accounts) || body.accounts.length === 0) {
+      try {
+        body.accounts = await readAccountsFromStorage();
+      } catch {}
     }
 
     if (body.stream) {
@@ -39,7 +54,7 @@ module.exports = async function handler(req, res) {
             if (line.startsWith('data: ')) {
               const data = line.slice(6);
               if (data === '[DONE]') {
-                res.write(`data: [DONE]\n\n`);
+                res.write('data: [DONE]\n\n');
                 continue;
               }
 
@@ -50,15 +65,17 @@ module.exports = async function handler(req, res) {
                   object: 'chat.completion.chunk',
                   created: Math.floor(Date.now() / 1000),
                   model,
-                  choices: [{
-                    index: 0,
-                    delta: parsed.choices?.[0]?.delta || {},
-                    finish_reason: parsed.choices?.[0]?.finish_reason || null,
-                  }],
+                  choices: [
+                    {
+                      index: 0,
+                      delta: parsed.choices?.[0]?.delta || {},
+                      finish_reason: parsed.choices?.[0]?.finish_reason || null,
+                    },
+                  ],
                   account: accountMeta,
                 };
                 res.write(`data: ${JSON.stringify(openaiChunk)}\n\n`);
-              } catch (e) {
+              } catch {
                 res.write(line + '\n');
               }
             }
@@ -81,3 +98,4 @@ module.exports = async function handler(req, res) {
     });
   }
 };
+

@@ -142,6 +142,21 @@
 - `GET /api/accounts` - 读取服务端账号池
 - `POST /api/accounts` - 覆盖保存服务端账号池
 - `DELETE /api/accounts` - 清空服务端账号池
+- `GET /api/auth/apikey` - 读取客户端 Key 状态（脱敏）
+- `POST /api/auth/apikey` - 设置自定义客户端 Key
+- `DELETE /api/auth/apikey` - 删除自定义客户端 Key
+
+### 其他客户端如何调用
+
+设置好“客户端 Key”后，第三方客户端可直接调用：
+
+- Header 方式：
+  - `Authorization: Bearer <你的自定义Key>`
+  - 或 `x-api-key: <你的自定义Key>`
+- Body 方式：
+  - `apiKey: "<你的自定义Key>"`
+
+调用时可不再传 `accessPassword`。服务端会优先校验客户端 Key。
 
 ### 持久化状态验证（推荐）
 
