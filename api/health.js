@@ -1,4 +1,5 @@
-﻿const { getDefaultModel, isAccessPasswordEnabled } = require('../lib/freebuff');
+const { getDefaultModel, isAccessPasswordEnabled } = require('../lib/freebuff');
+const { getStorageStatus } = require('../lib/account-storage');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -6,12 +7,16 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  const storage = getStorageStatus();
   res.status(200).json({
     status: 'ok',
     model: getDefaultModel(),
     web: true,
     loginMode: 'github-via-freebuff',
-    accountMode: 'multi-account-round-robin',
+    accountMode: 'server-pool-round-robin',
     accessPasswordEnabled: isAccessPasswordEnabled(),
+    accountStorage: storage.mode,
+    blobConfigured: storage.configured,
   });
 };
+

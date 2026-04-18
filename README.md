@@ -20,6 +20,7 @@
 
 - `DEFAULT_MODEL`: 选填，默认模型名
 - `ACCESS_PASSWORD`: 选填，设置后首页会先要求输入访问密码
+- `BLOB_READ_WRITE_TOKEN`: 选填，配置后启用服务端账号池持久化
 
 ## 推荐使用流程
 
@@ -133,6 +134,9 @@
 - `POST /api/auth/login/start` - 启动 GitHub OAuth 登录
 - `GET /api/auth/login/status` - 轮询登录状态
 - `GET /api/health` - 健康检查
+- `GET /api/accounts` - 读取服务端账号池
+- `POST /api/accounts` - 覆盖保存服务端账号池
+- `DELETE /api/accounts` - 清空服务端账号池
 
 ## 部署到 Vercel
 
@@ -143,18 +147,20 @@ vercel
 **环境变量配置：**
 - `DEFAULT_MODEL`（可选）：默认模型名称
 - `ACCESS_PASSWORD`（可选）：首页访问密码，设置后需要验证才能进入
+- `BLOB_READ_WRITE_TOKEN`（可选）：服务端账号池持久化
 
 ## 技术栈
 
 - 纯静态 HTML + JavaScript（无构建步骤）
 - Vercel Serverless Functions（API 路由）
-- localStorage（账号池本地存储）
+- Vercel Blob（账号池服务端持久化）
+- localStorage（服务不可用时本地兜底）
 - Bookmarklet（跨域 Token 回传）
 
 ## 当前限制
 
 - **流式响应**：`stream: true` 暂未支持
-- **账号持久化**：账号池保存在浏览器 `localStorage`，清除浏览器数据会丢失
+- **账号持久化**：配置 `BLOB_READ_WRITE_TOKEN` 后保存在服务端，未配置时退回本地缓存
 - **访问控制**：首页密码是应用层保护，不是完整的用户权限系统
 - **登录依赖**：Bookmarklet 依赖 `freebuff.com` 的有效登录会话
 - **Serverless 限制**：轮询计数和 `runId` 缓存在冷启动后会重置
