@@ -91,14 +91,17 @@ button,.bookmarklet-link{display:inline-flex;align-items:center;justify-content:
         <div class="small muted" id="statsInfo" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(132,160,216,.1)">暂无统计数据</div>
       </section>
       <section class="card stack composer-card">
-        <div class="row"><strong>③ 快速测试</strong><button id="quickTestBtn" class="secondary">发送测试消息</button></div>
+        <div class="row"><strong>③ 快速测试</strong><span class="chip">操作区</span></div>
         <div class="panel-kpis">
           <span id="usedAccount" class="chip">尚未发送</span>
           <span class="chip" id="requestInfo">等待发送请求</span>
         </div>
         <div><label for="prompt">消息内容 <span class="small muted">(Ctrl+Enter 发送)</span></label><textarea id="prompt" placeholder="输入测试消息，例如：你好"></textarea></div>
         <div><label><input type="checkbox" id="streamMode" style="width:auto;min-height:auto;margin-right:6px"><span class="small">启用流式响应（实时逐字显示）</span></label></div>
-        <button id="submit">发送请求</button>
+        <div class="two">
+          <button id="quickTestBtn" class="secondary">发送测试消息</button>
+          <button id="submit">发送请求</button>
+        </div>
         <div id="status" class="status">正在加载模型列表…</div>
       </section>
     </div>
