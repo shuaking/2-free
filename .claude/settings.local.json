@@ -3,7 +3,18 @@
     "allow": [
       "Bash(git push *)",
       "Bash(git reset *)",
-      "Bash(git fetch *)"
+      "Bash(git fetch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(npm start *)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(netstat -ano)",
+      "Bash(npm install *)",
+      "Bash(vercel dev *)",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__evaluate_script"
     ]
   }
 }
