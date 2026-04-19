@@ -135,6 +135,7 @@
 ### 其他接口
 
 - `GET /api/v1/models` - 获取可用模型列表
+- `POST /api/v1/messages` - Anthropic Claude 兼容接口（支持流式）
 - `POST /api/auth/access` - 验证访问密码
 - `POST /api/auth/login/start` - 启动 GitHub OAuth 登录
 - `GET /api/auth/login/status` - 轮询登录状态
@@ -160,6 +161,10 @@
 
 模型自动发现：
 - 客户端调用 `GET /api/v1/models` 并携带上述 Key，即可自动获取模型列表。
+
+Anthropic 客户端兼容：
+- 可直接配置 `Base URL = https://你的域名/api`
+- 调用 `POST /v1/messages`（支持非流式/流式）
 
 ### 持久化状态验证（推荐）
 
