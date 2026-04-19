@@ -136,6 +136,7 @@
 
 - `GET /api/v1/models` - 获取可用模型列表
 - `POST /api/v1/messages` - Anthropic Claude 兼容接口（支持流式）
+- `POST /api/responses` - OpenAI Responses 兼容入口（内部转 `/v1/chat/completions`）
 - `POST /api/auth/access` - 验证访问密码
 - `POST /api/auth/login/start` - 启动 GitHub OAuth 登录
 - `GET /api/auth/login/status` - 轮询登录状态
